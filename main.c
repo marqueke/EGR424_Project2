@@ -1,14 +1,10 @@
 /*******************************************************************************************************
- *Author        Dustin Matthews and Kelsey Marquez
- *Course        EGR 326: Microcontroller Programming and Applications
- *Assignment    Lab 06: Interfacing a Graphic LCD to the MSP432
- *Date          10/6/22
- *Instructor    Professor Krug
- *Description   Pt3
- *              Interface MSP432 with 128x160 ST7735 LCD :
- *              Implement a 'counter' such that in each corner, a character counts from 0-9, updating
- *              once per second. Delay, then a single character counts 0-9 in the center of the screen,
- *              updating once per second.
+ *Author        Kelsey Marquez
+ *Course        EGR 424: Design of Microcontroller Applications
+ *Assignment    Project 2: Slot Machine
+ *Date          6/27/24
+ *Instructor    Dr. Parikh
+ *Description   Interface MSP432 with 128x160 ST7735 LCD
  *Notes:        Includes modified Valvano graphics library for interfacing with the ST7735 LCD
  ****************************************************************************************************/
 #include "msp.h"
@@ -17,22 +13,45 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
 
-void clock_pin_check();
-void set_clk48MHz(void);                             //Initialize the clock
+void pin_init(void);
+void PORT4_IRQHandler(void);
+void check_victory(void);
+void set_clk48MHz(void);
 void start_screen();
-void menu_screen();
-void countup();
+void shift_rows(void);
+void spin_reels(void);
+void display_row(char row[], int line);
+
 /**********PIN MAP************
  * * * * * * * * * * * * * * *
  ******** ST7735 LCD  ********
- *
  * CLK                   >P9.5
  * SDA                   >P9.7
  * RS (A0)               >P9.2
  * RST                   >P9.3
  * CS                    >P9.4
+ ********** BUTTONS **********
+ * STOP                  >P4.6
+ * START                 >P4.7
 ******************************/
+
+uint8_t BTN_MASK = 0b11000000;      // mask for BTN Pins
+uint8_t BTN1 = BIT6,                // define button 1 bit
+        BTN2 = BIT7;                // define button 2 bit
+
+volatile bool spin = false;
+//volatile bool stop = true;
+
+// Define symbols
+const char *symbols[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8"};
+
+// slot machine rows
+char row1[4] = {' ', ' ', ' ', '\0'};
+char row2[4] = {' ', ' ', ' ', '\0'};
+char row3[4] = {' ', ' ', ' ', '\0'};
 
 /*-------------------------------------------------------------------------------//
  * Function     main()
@@ -40,20 +59,96 @@ void countup();
 void main(void)
 {
     WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD;     // stop watchdog timer
-
-    set_clk48MHz();                             // Initialize the MCLK to 48MHz
-                                                   // and SMCLK to 12MHz
+    pin_init();
     ST7735_InitR(INITR_REDTAB);
-    //start_screen();
-    //menu_screen();
-    ST7735_SetRotation(1);                          // rotate display 90*
+
+    NVIC_EnableIRQ(PORT4_IRQn);
+    __enable_irq();
+
     ST7735_FillScreen(ST7735_WHITE);
-    ST7735_DrawBitmap(100, 100, cat, 30, 30);        // set image on screen
+
     while (1){
-        //countup();
+        if(spin) {
+            spin_reels();
+            __delay_cycles(5000000);
+        }
     }
 }
 
+/*-------------------------------------------------------------------------------//
+ * Function      pin_init()
+ * Description   Initializes GPIO pins to interface with external buttons and LEDs
+ *------------------------------------------------------------------------------*/
+void pin_init(){
+    // DEFINE P4 AS GPIO
+    P4->SEL1 &= ~BTN_MASK;
+    P4->SEL0 &= ~BTN_MASK;
+    P4->IES  |=  BTN_MASK;                  // set to detect falling edge
+    P4->IE   |=  BTN_MASK;                  // enable port interrupt
+    P4->IFG   =  0;                         // clr intpt flag
+
+    // SET UP BUTTONS
+    P4->DIR &= ~BTN_MASK;                   //Set buttons as input
+    P4->REN |= BTN_MASK;                    //Enable Internal resistance
+    P4->OUT |= BTN_MASK;                    //Set pull-up resistor
+
+    NVIC->ISER[1] = 1 << ((PORT4_IRQn) & 31); // Enable Port 4 interrupt in NVIC
+}
+
+/*-------------------------------------------------------------------------------//
+ * Function     PORT4_IRQHandler()
+ * Description  Trigger P4 interrupts with external buttons, set flag for use in other functions
+ *              Disable interrupt for button that triggered handler until it is debounced
+ *------------------------------------------------------------------------------*/
+void PORT4_IRQHandler(void) {
+    if (P4->IFG & BIT7) {   // Start button (P4.7) pressed
+        P4->IFG &= ~BIT7;   // Clear interrupt flag
+        spin = true;        // Start spinning
+    } else if (P4->IFG & BIT6) { // Stop button (P4.6) pressed
+        P4->IFG &= ~BIT6;   // Clear interrupt flag
+        spin = false;        // stop spinning
+    }
+}
+
+void display_row(char row[], int line) {
+    ST7735_DrawString(0, line * 4, row, ST7735_BLACK);
+}
+
+// check if there are 3 symbols in a row
+void check_victory(void) {
+    // Check if any row has 3 of the same symbols
+    if ((row1[0] == row1[1] && row1[1] == row1[2]) ||
+        (row2[0] == row2[1] && row2[1] == row2[2]) ||
+        (row3[0] == row3[1] && row3[1] == row3[2])) {
+            ST7735_DrawString(100, 100, "Victory!", ST7735_BLACK);
+    }
+}
+
+void spin_reels(void) {
+    int i = 0;
+
+    for(i = 0; i < 3; i++) {
+        row3[i] = symbols[rand() % 9][0];
+    }
+    row3[3] = '\0';         // null-terminate string
+    display_row(row3, 3);   // display on bottom row
+    shift_rows();
+}
+
+void shift_rows(void) {
+    int i = 0;
+
+    // shift row upwards
+    for(i=0; i < 3; i++) {
+        row1[i] = row2[i];
+        row2[i] = row3[i];
+    }
+    row1[3] = '\0';
+    row2[3] = '\0';
+    display_row(row2, 2);   // display in middle row
+    display_row(row1, 1);   // display in top row
+    check_victory();
+}
 
 /*-------------------------------------------------------------------------------//
  * Function:        set_clk48MHz(void)
@@ -104,75 +199,10 @@ void start_screen()
 {
     char start_txt[2][17]= {"EMBEDDED", "SYSTEMS"};
     ST7735_SetRotation(1);                              // rotate display 90*
-    ST7735_DrawBitmap(0, 128, triangle, 160, 128);        // set image on screen
+//    ST7735_DrawBitmap(0, 128, triangle, 160, 128);        // set image on screen
     ST7735_DrawString(6, 4, start_txt[0], ST7735_BLACK);// print 1st string
     ST7735_DrawString(6, 6, start_txt[1], ST7735_BLACK);// print 2nd string, set
                                                         // with 1 row space btwn 1st
     Delay1ms(3000);                                     // delay 3000ms
 }
 
-/*-------------------------------------------------------------------------------//
- * Function:        menu_screen()
- * Description:     blackout screen and then display menu options
- *
- *------------------------------------------------------------------------------*/
-void menu_screen()
-{
-    char menu_txt[4][20] = {"1.SET TIME", "2.SET BEAT", "3.SET SCALE"};
-    ST7735_FillScreen(ST7735_BLACK);                    // set to black
-    Delay1ms(500);
-    ST7735_FillScreen(ST7735_WHITE);                    // set to white
-    ST7735_SetRotation(1);                              // rotate display 90*
-    ST7735_DrawString(0, 3, menu_txt[0], ST7735_BLACK); // print 1st string
-    ST7735_DrawString(0, 6, menu_txt[1], ST7735_BLACK); // print 2nd string, set
-                                                        // with 1 row space btwn
-    ST7735_DrawString(0, 9, menu_txt[2], ST7735_BLACK); // print 3nd string, set
-                                                        // with 1 row space btwn
-    Delay1ms(1000);
-}
-
-
-void countup()
-{
-    char crnr_cnt[11] ={'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-    int i;
-    ST7735_FillScreen(ST7735_WHITE);                    // set to white
-
-    for(i = 0; i < 10; i++)
-    {
-        ST7735_DrawChar(0, 0, crnr_cnt[i], ST7735_BLACK, ST7735_WHITE, 4);
-        ST7735_DrawChar(0, 96, crnr_cnt[i], ST7735_BLACK, ST7735_WHITE, 4);
-        ST7735_DrawChar(136, 0, crnr_cnt[i], ST7735_BLACK, ST7735_WHITE, 4);
-        ST7735_DrawChar(136, 96, crnr_cnt[i], ST7735_BLACK, ST7735_WHITE, 4);
-
-        Delay1ms(1000);
-    }
-    ST7735_FillScreen(ST7735_WHITE);                    // set to white
-    for(i = 0; i < 10; i++)
-    {
-        ST7735_DrawChar(68, 48, crnr_cnt[i], ST7735_BLACK, ST7735_WHITE, 4);
-
-        Delay1ms(500);
-    }
-
-    Delay1ms(3000);
-
-}
-
-/*-------------------------------------------------------------------------------//
- * Function:        clock_pin_check()
- * Description:     Outputs clock to gpio pins- this allows the oscope to be used
- *                  to verify clock frequency
- *
- *------------------------------------------------------------------------------*/
-void clock_pin_check()
-{
-    //Output MCLK and SMCLK to port pin to demonstrate 48MHz operation
-    P4->DIR  |=   (BIT3 | BIT4);
-    P4->SEL0 |=   (BIT3 | BIT4);                       //Output MCLK
-    P4->SEL1 &= ~ (BIT3 | BIT4);
-
-    P7->DIR  |=   (BIT0);
-    P7->SEL0 |=   (BIT0);                              //Output SMCLK
-    P7->SEL1 &= ~ (BIT0);
-}
