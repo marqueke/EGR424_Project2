@@ -1,5 +1,5 @@
 /*******************************************************************************************************
- *Author        Kelsey Marquez
+ *Author        Kelsey Marquez and Jacob Kucinski
  *Course        EGR 424: Design of Microcontroller Applications
  *Assignment    Project 2: Slot Machine
  *Date          6/27/24
@@ -16,26 +16,31 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-void pin_init(void);
-void PORT4_IRQHandler(void);
-void check_victory(void);
-void set_clk48MHz(void);
-void start_screen();
-void shift_rows(void);
-void spin_reels(void);
-void display_row(char row[], int line);
+void pin_init(void);                        // GPIO init
+void PORT4_IRQHandler(void);                // buttons interrupt handler
+void set_clk48MHz(void);                    // clock init for LCD
+void start_screen(void);                    // LCD display
+void spin_reels(void);                      // LCD display / game function
+void display_row(char row[], int line);     // LCD display
+void check_victory(void);                   // LCD display / game function
 
+//for jacob.
+//L->R
+//vcc, gnd, cs, reset, ao, sda, sck, led(no)
+//white, yellow, blue, purple, orange, grey, green
 /**********PIN MAP************
  * * * * * * * * * * * * * * *
  ******** ST7735 LCD  ********
- * CLK                   >P9.5
- * SDA                   >P9.7
- * RS (A0)               >P9.2
- * RST                   >P9.3
- * CS                    >P9.4
+ * CLK                   >P9.5  green
+ * SDA                   >P9.7  grey
+ * RS (A0)               >P9.2  orange
+ * RST                   >P9.3  purple
+ * CS                    >P9.4  blue
+ * 3.3V                         white
+ * GND                          yellow
  ********** BUTTONS **********
- * STOP                  >P4.6
- * START                 >P4.7
+ * STOP                  >P4.6  red
+ * START                 >P4.7  orange
 ******************************/
 
 uint8_t BTN_MASK = 0b11000000;      // mask for BTN Pins
@@ -43,43 +48,42 @@ uint8_t BTN1 = BIT6,                // define button 1 bit
         BTN2 = BIT7;                // define button 2 bit
 
 volatile bool spin = false;
-//volatile bool stop = true;
 
 // Define symbols
 const char *symbols[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8"};
 
 // slot machine rows
-char row1[4] = {' ', ' ', ' ', '\0'};
-char row2[4] = {' ', ' ', ' ', '\0'};
-char row3[4] = {' ', ' ', ' ', '\0'};
+// added spaces between the numbers for easier display on LCD
+char row1[6] = {' ', ' ', ' ',' ', ' ', '\0'};
+char row2[6] = {' ', ' ', ' ',' ', ' ', '\0'};
+char row3[6] = {' ', ' ', ' ',' ', ' ', '\0'};
 
 /*-------------------------------------------------------------------------------//
  * Function     main()
  *-------------------------------------------------------------------------------*/
 void main(void)
 {
-    WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD;     // stop watchdog timer
+    WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD;
+    set_clk48MHz();
     pin_init();
     ST7735_InitR(INITR_REDTAB);
-
     NVIC_EnableIRQ(PORT4_IRQn);
     __enable_irq();
 
-    ST7735_FillScreen(ST7735_WHITE);
-
+    start_screen();
     while (1){
         if(spin) {
             spin_reels();
-            __delay_cycles(5000000);
+            __delay_cycles(50000000);
         }
     }
 }
 
 /*-------------------------------------------------------------------------------//
- * Function      pin_init()
- * Description   Initializes GPIO pins to interface with external buttons and LEDs
+ * Function      pin_init(void)
+ * Description   Initializes GPIO pins to interface with external buttons
  *------------------------------------------------------------------------------*/
-void pin_init(){
+void pin_init(void){
     // DEFINE P4 AS GPIO
     P4->SEL1 &= ~BTN_MASK;
     P4->SEL0 &= ~BTN_MASK;
@@ -96,58 +100,22 @@ void pin_init(){
 }
 
 /*-------------------------------------------------------------------------------//
- * Function     PORT4_IRQHandler()
+ * Function     PORT4_IRQHandler(void)
  * Description  Trigger P4 interrupts with external buttons, set flag for use in other functions
  *              Disable interrupt for button that triggered handler until it is debounced
  *------------------------------------------------------------------------------*/
 void PORT4_IRQHandler(void) {
     if (P4->IFG & BIT7) {   // Start button (P4.7) pressed
         P4->IFG &= ~BIT7;   // Clear interrupt flag
+        ST7735_FillScreen(ST7735_WHITE);
         spin = true;        // Start spinning
     } else if (P4->IFG & BIT6) { // Stop button (P4.6) pressed
         P4->IFG &= ~BIT6;   // Clear interrupt flag
         spin = false;        // stop spinning
+        check_victory();
     }
-}
 
-void display_row(char row[], int line) {
-    ST7735_DrawString(0, line * 4, row, ST7735_BLACK);
-}
-
-// check if there are 3 symbols in a row
-void check_victory(void) {
-    // Check if any row has 3 of the same symbols
-    if ((row1[0] == row1[1] && row1[1] == row1[2]) ||
-        (row2[0] == row2[1] && row2[1] == row2[2]) ||
-        (row3[0] == row3[1] && row3[1] == row3[2])) {
-            ST7735_DrawString(100, 100, "Victory!", ST7735_BLACK);
-    }
-}
-
-void spin_reels(void) {
-    int i = 0;
-
-    for(i = 0; i < 3; i++) {
-        row3[i] = symbols[rand() % 9][0];
-    }
-    row3[3] = '\0';         // null-terminate string
-    display_row(row3, 3);   // display on bottom row
-    shift_rows();
-}
-
-void shift_rows(void) {
-    int i = 0;
-
-    // shift row upwards
-    for(i=0; i < 3; i++) {
-        row1[i] = row2[i];
-        row2[i] = row3[i];
-    }
-    row1[3] = '\0';
-    row2[3] = '\0';
-    display_row(row2, 2);   // display in middle row
-    display_row(row1, 1);   // display in top row
-    check_victory();
+    //to add: third button to "cheat" the game and guarantee victory by placing 3 matching symbols (to show functionality)
 }
 
 /*-------------------------------------------------------------------------------//
@@ -189,20 +157,90 @@ void set_clk48MHz(void)
 }
 
 /*-------------------------------------------------------------------------------//
- * Function:        start_screen()
- * Description:     Set image on screen
- *                  * when setting rotation, must also set parameters of draw
- *                  function to match the 'new' dimensions
- *
+ * Function:        start_screen(void)
+ * Description:     Welcome screen to display that prompts the user to begin
+ *                  playing the slot machine
  *------------------------------------------------------------------------------*/
-void start_screen()
+void start_screen(void)
 {
-    char start_txt[2][17]= {"EMBEDDED", "SYSTEMS"};
-    ST7735_SetRotation(1);                              // rotate display 90*
-//    ST7735_DrawBitmap(0, 128, triangle, 160, 128);        // set image on screen
-    ST7735_DrawString(6, 4, start_txt[0], ST7735_BLACK);// print 1st string
-    ST7735_DrawString(6, 6, start_txt[1], ST7735_BLACK);// print 2nd string, set
-                                                        // with 1 row space btwn 1st
-    Delay1ms(3000);                                     // delay 3000ms
+    char start_txt[5][17]= {"Welcome to", "the slot", "machine!", "Spin to", "play!"};
+    ST7735_FillScreen(ST7735_WHITE);
+    ST7735_DrawString(1, 2, start_txt[0], ST7735_BLACK);
+    ST7735_DrawString(3, 4, start_txt[1], ST7735_BLACK);
+    ST7735_DrawString(3, 6, start_txt[2], ST7735_BLACK);
+    ST7735_DrawString(3, 10, start_txt[3], ST7735_BLACK);
+    ST7735_DrawString(6, 12, start_txt[4], ST7735_BLACK);
 }
 
+/*
+ * eliminated shift_rows function, and condensing into spin_reels()
+ * to solve the issue of repeated numbers on lines 2 and 3
+ */
+/*-------------------------------------------------------------------------------//
+ * Function:        spin_reels(void)
+ * Description:     Function that handles the movement and generation of the
+ *                  slot machine symbols
+ *------------------------------------------------------------------------------*/
+void spin_reels(void) {
+    int i = 0;
+
+    // shift rows upwards. row2->row1, row3->row2
+    for(i=0; i < 5; i++) {
+        row1[i] = row2[i];
+        row2[i] = row3[i];
+        i++;
+    }
+
+    //make new third row
+    for(i = 0; i < 5; i++) {
+        row3[i] = symbols[rand() % 9][0];
+        i++;
+    }
+
+    //display new rows after shift and random generated third row
+    display_row(row1, 1);   // display top row
+    display_row(row2, 2);   // display middle row
+    display_row(row3, 3);   // display bottom row
+}
+
+/*-------------------------------------------------------------------------------//
+ * Function:        display_row(char row[], int line)
+ * Description:     Function used by spin_reels() that will display the slot
+ *                  machine rows on the LCD
+ *------------------------------------------------------------------------------*/
+void display_row(char row[], int line) {
+    ST7735_DrawString(6, line * 4, row, ST7735_BLACK);
+}
+
+/*-------------------------------------------------------------------------------//
+ * Function:        check_victory(void)
+ * Description:     Function to check if the user has won on the slot machine.
+ *                  Victory is achieved by matching 3 alike symbols in any row
+ *------------------------------------------------------------------------------*/
+void check_victory(void) {
+
+    char victory_text[4][17]= {"Victory!", "You WIN!", "Spin", "again!"};
+
+    // Check if any row has 3 of the same symbols
+    if ((row1[0] == row1[2] || row1[2] == row1[4]) ||
+        (row2[0] == row2[2] || row2[2] == row2[4]) ||
+        (row3[0] == row3[2] || row3[2] == row3[4])) {
+
+        ST7735_FillScreen(ST7735_WHITE);
+        ST7735_DrawString(3, 2, victory_text[0], ST7735_BLACK);
+        ST7735_DrawString(3, 4, victory_text[1], ST7735_BLACK);
+        ST7735_DrawString(6, 10, victory_text[2], ST7735_BLACK);
+        ST7735_DrawString(5, 12, victory_text[3], ST7735_BLACK);
+        spin = false;
+    }
+
+    if (row1[0] == row1[2] || row1[2] == row1[4]){
+        ST7735_DrawString(6, 7, row1, ST7735_BLACK);
+    }
+    else if(row2[0] == row2[2] || row2[2] == row2[4]){
+        ST7735_DrawString(6, 7, row2, ST7735_BLACK);
+    }
+    else if(row3[0] == row3[2] || row3[2] == row3[4]){
+        ST7735_DrawString(6, 7, row3, ST7735_BLACK);
+    }
+}

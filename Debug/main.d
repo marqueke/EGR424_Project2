@@ -18,7 +18,7 @@ main.obj: C:/ti/ccsv8/ccs_base/arm/include/CMSIS/core_cm4.h
 main.obj: C:/ti/ccsv8/ccs_base/arm/include/CMSIS/cmsis_compiler.h
 main.obj: C:/ti/ccsv8/ccs_base/arm/include/CMSIS/cmsis_ccs.h
 main.obj: C:/ti/ccsv8/ccs_base/arm/include/system_msp432p401r.h
-main.obj: C:/Users/31kav/workspace_v8/EGR424_Project2/ST7735.h
+main.obj: C:/Users/jkuci/OneDrive/Documents/school/S24/EGR//\ 424/EGR424_Project2/ST7735.h
 main.obj: ../images.h
 main.obj: C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.8.LTS/include/stdlib.h
 main.obj: C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.8.LTS/include/stdio.h
@@ -44,7 +44,7 @@ C:/ti/ccsv8/ccs_base/arm/include/CMSIS/core_cm4.h:
 C:/ti/ccsv8/ccs_base/arm/include/CMSIS/cmsis_compiler.h: 
 C:/ti/ccsv8/ccs_base/arm/include/CMSIS/cmsis_ccs.h: 
 C:/ti/ccsv8/ccs_base/arm/include/system_msp432p401r.h: 
-C:/Users/31kav/workspace_v8/EGR424_Project2/ST7735.h: 
+C:/Users/jkuci/OneDrive/Documents/school/S24/EGR//\ 424/EGR424_Project2/ST7735.h: 
 ../images.h: 
 C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.8.LTS/include/stdlib.h: 
 C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.8.LTS/include/stdio.h: 
