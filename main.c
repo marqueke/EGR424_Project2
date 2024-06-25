@@ -16,13 +16,14 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-void pin_init(void);                        // GPIO init
-void PORT4_IRQHandler(void);                // buttons interrupt handler
-void set_clk48MHz(void);                    // clock init for LCD
-void start_screen(void);                    // LCD display
-void spin_reels(void);                      // LCD display / game function
-void display_row(char row[], int line);     // LCD display
-void check_victory(void);                   // LCD display / game function
+void pin_init(void);                            // GPIO init
+void PORT4_IRQHandler(void);                    // buttons interrupt handler
+void set_clk48MHz(void);                        // clock init for LCD
+void start_screen(void);                        // LCD display
+void spin_reels(void);                          // LCD display / game function
+void display_row(char row[], int line);         // LCD display
+void display_slots(int num, int row, int col);  // LCD display
+void check_victory(void);                       // LCD display / game function
 
 //for jacob.
 //L->R
@@ -53,10 +54,9 @@ volatile bool spin = false;
 const char *symbols[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8"};
 
 // slot machine rows
-// added spaces between the numbers for easier display on LCD
-char row1[6] = {' ', ' ', ' ',' ', ' ', '\0'};
-char row2[6] = {' ', ' ', ' ',' ', ' ', '\0'};
-char row3[6] = {' ', ' ', ' ',' ', ' ', '\0'};
+char row1[4] = {' ', ' ', ' ', '\0'};
+char row2[4] = {' ', ' ', ' ', '\0'};
+char row3[4] = {' ', ' ', ' ', '\0'};
 
 /*-------------------------------------------------------------------------------//
  * Function     main()
@@ -185,31 +185,92 @@ void spin_reels(void) {
     int i = 0;
 
     // shift rows upwards. row2->row1, row3->row2
-    for(i=0; i < 5; i++) {
+    for(i=0; i < 3; i++) {
         row1[i] = row2[i];
         row2[i] = row3[i];
-        i++;
     }
 
     //make new third row
-    for(i = 0; i < 5; i++) {
+    for(i = 0; i < 3; i++) {
         row3[i] = symbols[rand() % 9][0];
-        i++;
     }
 
-    //display new rows after shift and random generated third row
-    display_row(row1, 1);   // display top row
-    display_row(row2, 2);   // display middle row
-    display_row(row3, 3);   // display bottom row
+    // for numbers
+//    //display new rows after shift and random generated third row
+//    display_row(row1, 1);   // display top row
+//    display_row(row2, 2);   // display middle row
+//    display_row(row3, 3);   // display bottom row
+
+    for(i=0; i < 3; i++) {
+        display_slots(row1[i], 1, i);
+        display_slots(row2[i], 2, i);
+        display_slots(row3[i], 3, i);
+    }
 }
 
+// NO LONGER USE THIS, WAS USED TO TROUBLESHOOT WHILE USING NUMBERS
 /*-------------------------------------------------------------------------------//
  * Function:        display_row(char row[], int line)
  * Description:     Function used by spin_reels() that will display the slot
- *                  machine rows on the LCD
+ *                  machine rows on the LCD (using numbers, not symbols)
  *------------------------------------------------------------------------------*/
 void display_row(char row[], int line) {
     ST7735_DrawString(6, line * 4, row, ST7735_BLACK);
+}
+
+/*-------------------------------------------------------------------------------//
+ * Function:        void display_slots(int num, int row, int col)
+ * Description:     Function used by spin_reels() that will display the symbols
+ *                  for the slot machine rows on the LCD
+ *------------------------------------------------------------------------------*/
+void display_slots(int num, int row, int col){
+    //ST7735_DrawBitmap(x, y, logo, width, height);
+    int x = 0;
+    int y = 0;
+    int w = 30;
+    int h = 30;
+
+    switch(row){
+    case 1:  y = 42;
+             break;
+    case 2:  y = 95;
+             break;
+    case 3:  y = 148;
+             break;
+    default: break;
+    }
+
+    switch(col){
+    case 0:  x = 7;
+             break;
+    case 1:  x = 49;
+             break;
+    case 2:  x = 91;
+             break;
+    default: break;
+    }
+
+    switch(num){
+    case 48: ST7735_DrawBitmap(x, y, sun, w, h);
+            break;
+    case 49: ST7735_DrawBitmap(x, y, star, w, h);
+            break;
+    case 50: ST7735_DrawBitmap(x, y, cat, w, h);
+            break;
+    case 51: ST7735_DrawBitmap(x, y, heart, w, h);
+            break;
+    case 52: ST7735_DrawBitmap(x, y, ladybug, w, h);
+            break;
+    case 53: ST7735_DrawBitmap(x, y, fish, w, h);
+            break;
+    case 54: ST7735_DrawBitmap(x, y, clover, w, h);
+            break;
+    case 55: ST7735_DrawBitmap(x, y, pot_of_gold, w, h);
+            break;
+    case 56: ST7735_DrawBitmap(x, y, money_sign, w, h);
+            break;
+    default: break;
+    }
 }
 
 /*-------------------------------------------------------------------------------//
@@ -220,27 +281,36 @@ void display_row(char row[], int line) {
 void check_victory(void) {
 
     char victory_text[4][17]= {"Victory!", "You WIN!", "Spin", "again!"};
+    int i = 0;
 
     // Check if any row has 3 of the same symbols
-    if ((row1[0] == row1[2] || row1[2] == row1[4]) ||
-        (row2[0] == row2[2] || row2[2] == row2[4]) ||
-        (row3[0] == row3[2] || row3[2] == row3[4])) {
+    if ((row1[0] == row1[1] || row1[1] == row1[2]) ||
+        (row2[0] == row2[1] || row2[1] == row2[2]) ||
+        (row3[0] == row3[1] || row3[1] == row3[2])) {
 
+        spin = false;
         ST7735_FillScreen(ST7735_WHITE);
         ST7735_DrawString(3, 2, victory_text[0], ST7735_BLACK);
         ST7735_DrawString(3, 4, victory_text[1], ST7735_BLACK);
-        ST7735_DrawString(6, 10, victory_text[2], ST7735_BLACK);
-        ST7735_DrawString(5, 12, victory_text[3], ST7735_BLACK);
-        spin = false;
+        ST7735_DrawString(6, 11, victory_text[2], ST7735_BLACK);
+        ST7735_DrawString(5, 13, victory_text[3], ST7735_BLACK);
     }
 
-    if (row1[0] == row1[2] || row1[2] == row1[4]){
-        ST7735_DrawString(6, 7, row1, ST7735_BLACK);
+    //currently checking to see if 2 symbols match, for troubleshooting purposes
+    //since its very rare that all 3 symbols match
+    if (row1[0] == row1[1] || row1[1] == row1[2]){
+        for(i=0; i < 3; i++) {
+            display_slots(row1[i], 2, i);
+        }
     }
-    else if(row2[0] == row2[2] || row2[2] == row2[4]){
-        ST7735_DrawString(6, 7, row2, ST7735_BLACK);
+    else if(row2[0] == row2[1] || row2[1] == row2[2]){
+        for(i=0; i < 3; i++) {
+            display_slots(row2[i], 2, i);
+        }
     }
-    else if(row3[0] == row3[2] || row3[2] == row3[4]){
-        ST7735_DrawString(6, 7, row3, ST7735_BLACK);
+    else if(row3[0] == row3[1] || row3[1] == row3[2]){
+        for(i=0; i < 3; i++) {
+            display_slots(row3[i], 2, i);
+        }
     }
 }
