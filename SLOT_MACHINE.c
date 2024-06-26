@@ -32,8 +32,6 @@ extern volatile bool victory;
 void spin_reels(void) {
     int i = 0;
 
-    delay_ms(500);
-
     // shift rows upwards. row2->row1, row3->row2
     for(i=0; i < 3; i++) {
         row1[i] = row2[i];
