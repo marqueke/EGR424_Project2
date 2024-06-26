@@ -1,3 +1,13 @@
+/*****************************************************************
+ *  LCD.c
+ *
+ *  Authors       Kelsey Marquez and Jacob Kucinski
+ *  Course        EGR 424: Design of Microcontroller Applications
+ *  Instructor    Dr. Parikh
+ *  Assignment    Project 2: Slot Machine
+ *  Date          6/27/24
+ *****************************************************************/
+
 #include "LCD.h"
 #include "ST7735.h"  // Assuming ST7735 includes are proper for direct interfacing
 #include "images.h"
@@ -33,6 +43,9 @@ void start_screen(void)
  *------------------------------------------------------------------------------*/
 void display_slots(int num, int row, int col){
     //ST7735_DrawBitmap(x, y, logo, width, height);
+    //x and y coordinates designate the bottom left corner of the image on the LCD
+    //for this game, we use 3 rows and 3 columns evenly spaced on a 128x160 display
+
     int x = 0;
     int y = 0;
     int w = 30;
@@ -77,7 +90,6 @@ void display_slots(int num, int row, int col){
             break;
     case 56: ST7735_DrawBitmap(x, y, money_sign, w, h);
             break;
-
     default: break;
     }
 }

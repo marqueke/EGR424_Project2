@@ -1,9 +1,12 @@
-/*
- * LCD.h
+/*****************************************************************
+ *  LCD.h
  *
- *  Created on: Jun 26, 2024
- *      Author: 31kav
- */
+ *  Authors       Kelsey Marquez and Jacob Kucinski
+ *  Course        EGR 424: Design of Microcontroller Applications
+ *  Instructor    Dr. Parikh
+ *  Assignment    Project 2: Slot Machine
+ *  Date          6/27/24
+ *****************************************************************/
 
 #ifndef LCD_H_
 #define LCD_H_

@@ -1,14 +1,20 @@
-/*
- * Slot_Machine.c
+/*****************************************************************
+ *  SLOT_MACHINE.c
  *
- *  Created on: Jun 26, 2024
- *      Author: 31kav
- */
+ *  Authors       Kelsey Marquez and Jacob Kucinski
+ *  Course        EGR 424: Design of Microcontroller Applications
+ *  Instructor    Dr. Parikh
+ *  Assignment    Project 2: Slot Machine
+ *  Date          6/27/24
+ *****************************************************************/
 
+// Project specific includes
 #include "LCD.h"  // For display functions
 #include "ST7735.h"
 #include "SLOT_MACHINE.h"
 #include "TIME.h"
+
+// standard includes
 #include <stdlib.h>
 #include <stdbool.h>
 
@@ -18,10 +24,6 @@ extern const char *symbols[];
 extern volatile bool spin;
 extern volatile bool victory;
 
-/*
- * eliminated shift_rows function, and condensing into spin_reels()
- * to solve the issue of repeated numbers on lines 2 and 3
- */
 /*-------------------------------------------------------------------------------//
  * Function:        spin_reels(void)
  * Description:     Function that handles the movement and generation of the
@@ -43,6 +45,7 @@ void spin_reels(void) {
         row3[i] = symbols[rand() % 9][0];
     }
 
+    //display slots on LCD
     for(i=0; i < 3; i++) {
         display_slots(row1[i], 1, i);
         display_slots(row2[i], 2, i);
@@ -69,6 +72,8 @@ void check_victory(void) {
 
         victory = true;
         spin = false;
+
+        //display victory message to user
         ST7735_FillScreen(ST7735_WHITE);
         ST7735_DrawString(3, 2, victory_text[0], ST7735_BLACK);
         ST7735_DrawString(3, 4, victory_text[1], ST7735_BLACK);
@@ -76,6 +81,7 @@ void check_victory(void) {
         ST7735_DrawString(5, 13, victory_text[3], ST7735_BLACK);
     }
 
+    //include the winning row in the victory message screen
     if (row1[0] == row1[1] && row1[1] == row1[2]){
         for(i=0; i < 3; i++) {
             display_slots(row1[i], 2, i);

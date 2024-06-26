@@ -1,10 +1,14 @@
-/*
- * GPIO.c
+/*****************************************************************
+ *  GPIO.c
  *
- *  Created on: Jun 26, 2024
- *      Author: 31kav
- */
+ *  Authors       Kelsey Marquez and Jacob Kucinski
+ *  Course        EGR 424: Design of Microcontroller Applications
+ *  Instructor    Dr. Parikh
+ *  Assignment    Project 2: Slot Machine
+ *  Date          6/27/24
+ *****************************************************************/
 
+// Project specific includes
 #include "msp.h"
 #include "GPIO.h"
 #include "ST7735.h"
@@ -12,6 +16,7 @@
 #include "SLOT_MACHINE.h"
 #include "LCD.h"
 
+// standard includes
 #include <stdlib.h>
 #include <stdbool.h>
 
@@ -53,9 +58,9 @@ void PORT4_IRQHandler(void) {
                 victory = false;
                 start_screen();
             } else {
+                //continue to play the game
                 ST7735_FillScreen(ST7735_WHITE);
                 spin = true;
-                spin_reels();  // Start the spinning sequence
             }
         }
     } else if (P4->IFG & BIT6) {  // Check if Stop button is pressed

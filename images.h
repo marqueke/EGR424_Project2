@@ -1,9 +1,13 @@
-/*
- * images.h
+/*****************************************************************
+ *  images.h
  *
- *  Created on: June 13, 2024
- *      Author: Kelsey Marquez
- */
+ *  Authors       Kelsey Marquez and Jacob Kucinski
+ *  Course        EGR 424: Design of Microcontroller Applications
+ *  Instructor    Dr. Parikh
+ *  Assignment    Project 2: Slot Machine
+ *  Date          6/27/24
+ *****************************************************************/
+
 #ifndef IMAGES_H
 #define IMAGES_H
 
