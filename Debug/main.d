@@ -18,8 +18,11 @@ main.obj: C:/ti/ccsv8/ccs_base/arm/include/CMSIS/core_cm4.h
 main.obj: C:/ti/ccsv8/ccs_base/arm/include/CMSIS/cmsis_compiler.h
 main.obj: C:/ti/ccsv8/ccs_base/arm/include/CMSIS/cmsis_ccs.h
 main.obj: C:/ti/ccsv8/ccs_base/arm/include/system_msp432p401r.h
-main.obj: C:/Users/jkuci/OneDrive/Documents/school/S24/EGR//\ 424/EGR424_Project2/ST7735.h
-main.obj: ../images.h
+main.obj: ../ST7735.h
+main.obj: ../LCD.h
+main.obj: ../SLOT_MACHINE.h
+main.obj: ../TIME.h
+main.obj: ../GPIO.h
 main.obj: C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.8.LTS/include/stdlib.h
 main.obj: C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.8.LTS/include/stdio.h
 main.obj: C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.8.LTS/include/stdarg.h
@@ -44,8 +47,11 @@ C:/ti/ccsv8/ccs_base/arm/include/CMSIS/core_cm4.h:
 C:/ti/ccsv8/ccs_base/arm/include/CMSIS/cmsis_compiler.h: 
 C:/ti/ccsv8/ccs_base/arm/include/CMSIS/cmsis_ccs.h: 
 C:/ti/ccsv8/ccs_base/arm/include/system_msp432p401r.h: 
-C:/Users/jkuci/OneDrive/Documents/school/S24/EGR//\ 424/EGR424_Project2/ST7735.h: 
-../images.h: 
+../ST7735.h: 
+../LCD.h: 
+../SLOT_MACHINE.h: 
+../TIME.h: 
+../GPIO.h: 
 C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.8.LTS/include/stdlib.h: 
 C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.8.LTS/include/stdio.h: 
 C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.8.LTS/include/stdarg.h: 

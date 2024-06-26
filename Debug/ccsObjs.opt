@@ -1,1 +1,1 @@
-"./ST7735.obj" "./main.obj" "./startup_msp432p401r_ccs.obj" "./system_msp432p401r.obj" "../msp432p401r.cmd" -llibc.a 
+"./GPIO.obj" "./LCD.obj" "./SLOT_MACHINE.obj" "./ST7735.obj" "./TIME.obj" "./main.obj" "./startup_msp432p401r_ccs.obj" "./system_msp432p401r.obj" "../msp432p401r.cmd" -llibc.a 
