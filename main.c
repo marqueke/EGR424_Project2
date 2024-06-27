@@ -52,7 +52,7 @@ void main(void)
     while (1){
         if(spin) {
             spin_reels();
-            delay_ms(1000);
+            delay_ms(400);  //delay controls how fast the reels spin
         }
     }
 }

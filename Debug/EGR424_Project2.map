@@ -1,7 +1,7 @@
 ******************************************************************************
                   TI ARM Linker PC v18.1.8                     
 ******************************************************************************
->> Linked Wed Jun 26 15:46:39 2024
+>> Linked Thu Jun 27 11:25:35 2024
 
 OUTPUT FILE NAME:   <EGR424_Project2.out>
 ENTRY POINT SYMBOL: "_c_int00_noargs"  address: 00006855
@@ -66,10 +66,10 @@ section   page    origin      length       input sections
 .text      0    00004890    00002070     
                   00004890    0000139c     ST7735.obj (.text)
                   00005c2c    00000334     system_msp432p401r.obj (.text)
-                  00005f60    0000025c     SLOT_MACHINE.obj (.text)
-                  000061bc    00000234     LCD.obj (.text)
-                  000063f0    00000144     TIME.obj (.text)
-                  00006534    000000e4     GPIO.obj (.text)
+                  00005f60    00000258     SLOT_MACHINE.obj (.text)
+                  000061b8    00000234     LCD.obj (.text)
+                  000063ec    00000144     TIME.obj (.text)
+                  00006530    000000e8     GPIO.obj (.text)
                   00006618    0000009c     rtsv7M4_T_le_v4SPD16_eabi.lib : memcpy_t2.asm.obj (.text)
                   000066b4    0000007a                                   : memset_t2.asm.obj (.text)
                   0000672e    00000002                                   : _lock.c.obj (.text:_nop)
@@ -128,11 +128,11 @@ MODULE SUMMARY
        LCD.obj                       564    16225     0      
        ST7735.obj                    5020   2018      112    
        system_msp432p401r.obj        820    0         8      
-       SLOT_MACHINE.obj              604    68        0      
+       SLOT_MACHINE.obj              600    68        0      
        TIME.obj                      324    0         0      
        main.obj                      120    34        100    
        startup_msp432p401r_ccs.obj   14     228       0      
-       GPIO.obj                      228    0         0      
+       GPIO.obj                      232    0         0      
     +--+-----------------------------+------+---------+---------+
        Total:                        7694   18573     220    
                                                              
@@ -215,8 +215,8 @@ address   name
 000068f7  PORT1_IRQHandler              
 000068f7  PORT2_IRQHandler              
 000068f7  PORT3_IRQHandler              
-00006589  PORT4_IRQHandler              
-00006589  PORT4_IRQHandler              
+00006585  PORT4_IRQHandler              
+00006585  PORT4_IRQHandler              
 000068f7  PORT5_IRQHandler              
 000068f7  PORT6_IRQHandler              
 000068f7  PSS_IRQHandler                
@@ -313,12 +313,12 @@ UNDEFED   _system_post_cinit
 000068fd  abort                         
 ffffffff  binit                         
 00003924  cat                           
-0000600d  check_victory                 
+00006009  check_victory                 
 000000e4  clover                        
 000044eb  dBfs                          
-0000646f  debounce                      
-000064cb  delay_ms                      
-00006239  display_slots                 
+0000646b  debounce                      
+000064c7  delay_ms                      
+00006235  display_slots                 
 00005bad  ferror                        
 00005ba1  fgetc                         
 000054b5  fillmessage                   
@@ -333,20 +333,20 @@ ffffffff  binit
 000066bd  memset                        
 00001d04  money_sign                    
 000048f9  parrotdelay                   
-00006535  pin_init                      
+00006531  pin_init                      
 0000240c  pot_of_gold                   
 0000688d  rand                          
 20000040  row1                          
 20000044  row2                          
 20000048  row3                          
-000063f1  set_clk48MHz                  
+000063ed  set_clk48MHz                  
 20000054  spin                          
 00005f61  spin_reels                    
 00002b14  star                          
-000061bd  start_screen                  
+000061b9  start_screen                  
 0000321c  sun                           
 20000000  symbols                       
-000064af  sys_init                      
+000064ab  sys_init                      
 20000055  victory                       
 
 
@@ -409,16 +409,16 @@ address   name
 00005c2d  SystemCoreClockUpdate         
 00005ea5  SystemInit                    
 00005f61  spin_reels                    
-0000600d  check_victory                 
-000061bd  start_screen                  
-00006239  display_slots                 
-000063f1  set_clk48MHz                  
-0000646f  debounce                      
-000064af  sys_init                      
-000064cb  delay_ms                      
-00006535  pin_init                      
-00006589  PORT4_IRQHandler              
-00006589  PORT4_IRQHandler              
+00006009  check_victory                 
+000061b9  start_screen                  
+00006235  display_slots                 
+000063ed  set_clk48MHz                  
+0000646b  debounce                      
+000064ab  sys_init                      
+000064c7  delay_ms                      
+00006531  pin_init                      
+00006585  PORT4_IRQHandler              
+00006585  PORT4_IRQHandler              
 00006619  __aeabi_memcpy                
 00006619  __aeabi_memcpy4               
 00006619  __aeabi_memcpy8               

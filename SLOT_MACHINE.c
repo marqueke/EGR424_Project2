@@ -50,7 +50,8 @@ void spin_reels(void) {
         display_slots(row3[i], 3, i);
     }
 
-    check_victory();
+    check_victory();    //currently where we check_victory(). this game wins instantly upon 3 matching symbols.
+                        //victory does NOT depend upon stopping the spinning reels
 }
 
 /*-------------------------------------------------------------------------------//

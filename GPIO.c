@@ -67,6 +67,7 @@ void PORT4_IRQHandler(void) {
         if (debounce(20, BIT6)) {  // Debounce the stop button
             P4->IFG &= ~BIT6;   // Clear interrupt flag after confirming debounce
             spin = false;       // Stop any ongoing spinning
+            //check_victory();  //where we would check_victory() if looking to win after stopping the reels from spinning
         }
     }
 }
