@@ -14,6 +14,7 @@
 #include <stdint.h>
 
 void start_screen(void);
+
 void display_slots(int num, int row, int col);
 
 

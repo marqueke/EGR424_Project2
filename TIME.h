@@ -13,7 +13,7 @@
 
 #include <stdint.h>
 
-void set_clk48MHz(void);                        // clock init for LCD
+void set_clk48MHz(void);
 
 int debounce(int ms, uint8_t button);
 
